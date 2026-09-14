@@ -22,9 +22,10 @@ noise to suppress.
 
 ## Status
 
-Work in progress. This first commit contains the build, the CI and release workflows and the
-`tql-core` module skeleton. The rules, engine, reporters, CLI and Maven plugin follow, one
-increment at a time; see [CHANGELOG.md](CHANGELOG.md).
+Work in progress, delivered in increments (see [CHANGELOG.md](CHANGELOG.md)). Today the core
+module parses test sources, runs the rules over them and prints findings on the console. The
+remaining rules, the JSON, SARIF and Markdown reporters, the `tql` command line, the Maven
+plugin and the mutation-testing benchmark follow.
 
 ## Requirements
 
@@ -51,6 +52,64 @@ Then depend on the core module from your own build:
   <version>1.0.0-SNAPSHOT</version>
 </dependency>
 ```
+
+## Quick start
+
+Until the command line and Maven plugin exist, run the linter from Java:
+
+```java
+import io.github.byreshb.tql.engine.Linter;
+import io.github.byreshb.tql.model.LintResult;
+import io.github.byreshb.tql.model.Severity;
+import io.github.byreshb.tql.output.ConsoleReporter;
+import java.nio.file.Path;
+import java.util.List;
+
+public class LintTests {
+  public static void main(String[] args) {
+    Linter linter = Linter.withDefaults();
+    LintResult result = linter.lintPaths(List.of(Path.of("src/test/java")));
+    System.out.print(ConsoleReporter.forTerminal().render(result));
+    System.exit(result.hasFindingsAtOrAbove(Severity.ERROR) ? 1 : 0);
+  }
+}
+```
+
+The console output groups findings by file, one line each with position, severity, rule id and
+message, followed by the offending line and a fix hint:
+
+```text
+src/test/java/com/acme/OrderServiceTest.java
+  27:5   ERROR  TQL001  assertEquals compares order with itself and cannot fail
+         | assertEquals(order, order);
+         fix: Assert against an expected value that is computed independently of the code under test
+
+1 finding in 12 files (1 error, 0 warnings, 0 info)
+```
+
+## Rules
+
+| Id | Name | Severity | What it catches |
+|----|------|----------|-----------------|
+| [TQL001](docs/rules/TQL001.md) | TautologicalAssertion | ERROR | An assertion compares an expression with itself or can never fail. |
+
+The full list with bad and fixed examples is in [docs/rules](docs/rules/README.md).
+
+## Reference
+
+- `Linter`: `withDefaults()`, or `new Linter(RuleRegistry, RuleConfig)`; `lintPaths(paths)`
+  walks directories for `.java` files, `lint(sources)` takes in-memory `SourceFile`s.
+- `RuleConfig.builder()`: `disable(id)`, `severity(id, Severity)`, `option(id, key, value)`,
+  `exclude(glob)`.
+- `RuleRegistry.discover()` finds every rule registered as a `ServiceLoader` service, so a rule
+  in another jar is picked up by putting the jar on the classpath.
+- `LintResult`: `findings()` sorted by file and position, `problems()` for files that did not
+  parse, `countByRule()`, `countBySeverity()`, `hasFindingsAtOrAbove(Severity)`.
+- `ConsoleReporter`: `forTerminal()` colours when standard output is a terminal and `NO_COLOR`
+  is unset; `new ConsoleReporter(false)` never colours.
+
+How the pieces fit together, and how to add a rule or a reporter, is in
+[docs/design.md](docs/design.md).
 
 ## Building and testing
 
