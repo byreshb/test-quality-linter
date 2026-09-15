@@ -1,0 +1,37 @@
+name: 'Test Quality Linter'
+description: 'Lints Java test sources with tql and uploads the findings to GitHub code scanning as SARIF.'
+author: 'byreshb'
+branding:
+  icon: 'check-circle'
+  color: 'blue'
+
+inputs:
+  paths:
+    description: 'Space-separated files or directories to lint, relative to the workspace.'
+    required: false
+    default: 'src/test/java'
+  config:
+    description: 'Path to a .tql.yaml configuration file.'
+    required: false
+  fail-on:
+    description: >-
+      Fail the job when a finding reaches this severity or higher: info, warn or error. Leave
+      empty (the default) to never fail the job regardless of findings.
+    required: false
+  version:
+    description: "tql release version to download (e.g. 1.0.0). Defaults to this action's own version."
+    required: false
+  token:
+    description: 'Token used to download the release jar and upload the SARIF report. Needs security-events: write to upload.'
+    required: false
+    default: ${{ github.token }}
+
+outputs:
+  findings:
+    description: 'Total number of findings tql reported.'
+  sarif-id:
+    description: "The id GitHub's code scanning API assigned to the uploaded analysis, when the upload succeeded."
+
+runs:
+  using: 'node20'
+  main: 'dist/index.js'

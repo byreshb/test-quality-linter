@@ -7,6 +7,11 @@ All notable changes to this project are documented here. The format follows
 ## [Unreleased]
 
 ### Added
+- `action/`: a TypeScript GitHub Action (`byreshb/test-quality-linter/action@v1`). Downloads the
+  matching `tql-cli` release jar, runs `tql lint --format sarif`, uploads the SARIF directly to
+  GitHub's code-scanning REST API (no separate `upload-sarif` step needed), writes a job summary
+  with counts per rule, and optionally fails the job on `fail-on`. Zero runtime npm dependencies;
+  `dist/` is built with `@vercel/ncc` and committed, and CI fails if it goes stale.
 - `tql-benchmark`: 47 hand-written tests (23 deliberately weak, labelled with the rule id each
   should trigger; 24 clean), a `BenchmarkRunner` that runs the linter and reads a PIT mutation
   report to regenerate `docs/benchmark.md` with precision/recall per rule and mutation score of

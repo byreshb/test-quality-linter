@@ -7,8 +7,8 @@ on:
     branches: [main]
 
 jobs:
-  build:
-    name: Build and test
+  java:
+    name: Build and test (Java)
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
@@ -46,3 +46,37 @@ jobs:
             **/target/site/jacoco/
             **/target/tql/
           if-no-files-found: ignore
+
+  node:
+    name: Build and test (Node)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: action/package-lock.json
+
+      - name: Install dependencies
+        working-directory: action
+        run: npm ci
+
+      - name: Check formatting, types and lint
+        working-directory: action
+        run: npm run check
+
+      - name: Test
+        working-directory: action
+        run: npm test
+
+      - name: Verify dist/ is up to date
+        working-directory: action
+        run: |
+          npm run build
+          git diff --exit-code dist/

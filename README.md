@@ -78,7 +78,15 @@ parsed, so `tql lint src/test/java` works as a CI gate on its own. For GitHub co
 tql lint src/test/java --format sarif > target/tql.sarif
 ```
 
-See [docs/ci-integration.md](docs/ci-integration.md) for the full GitHub Actions workflow.
+See [docs/ci-integration.md](docs/ci-integration.md) for the full GitHub Actions workflow, or use
+the [`action/`](action) package directly:
+
+```yaml
+- uses: byreshb/test-quality-linter/action@v1
+  with:
+    paths: src/test/java
+    fail-on: error
+```
 
 ### Maven plugin
 

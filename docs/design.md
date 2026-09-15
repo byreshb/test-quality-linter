@@ -96,6 +96,23 @@ trivial, deliberately uncovered wrapper. `maven-shade-plugin` packages `tql-cli`
 executable jar, with a `ServicesResourceTransformer` so the `ServiceLoader`-based rule discovery
 in the shaded jar still works.
 
+## `action/` (TypeScript)
+
+Node.js 22, TypeScript 5, ESM, strict mode, zero runtime dependencies. Each module does one
+thing and is unit-tested on its own with Vitest: `severity.ts` (parsing and comparing
+INFO/WARN/ERROR), `sarif.ts` (reading `tql lint --format sarif`'s output without a SARIF
+library, since the shape is fixed and produced by `tql-core`'s own `SarifReporter`),
+`summary.ts` (the job summary Markdown), `download.ts` (the release jar URL and fetching it),
+`tql.ts` (the `java -jar ... lint` command line and running it), `upload.ts` (gzip + base64 the
+SARIF and POST it to GitHub's `code-scanning/sarifs` endpoint directly, the same one
+`github/codeql-action/upload-sarif` calls), and `actionsEnv.ts` (`INPUT_*`/`GITHUB_OUTPUT`/
+`GITHUB_STEP_SUMMARY` handling, reimplemented over `node:process` and `node:fs` instead of
+depending on `@actions/core`, small enough that the house rule preferring the standard library
+applies cleanly). `main.ts` wires these together and is deliberately thin, excluded from the
+coverage threshold the same way `tql-cli`'s `Main.main` is; `index.ts` is the two-line entry
+point `action.yml` points at. `@vercel/ncc` bundles `src/index.ts` into a dependency-free
+`dist/index.js`, committed because consumers run the action straight from a repository ref.
+
 ## `tql-benchmark`
 
 A fourth module, excluded from the coverage gate (`jacoco.skip=true`) since its own domain
