@@ -11,7 +11,9 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 async function main(): Promise<void> {
-  const extensionDevelopmentPath = fileURLToPath(new URL('../../..', import.meta.url));
+  // This file compiles to dist-test/test/runTest.js, so two levels up is the extension root
+  // (vscode-extension/, where package.json and the built dist/ live).
+  const extensionDevelopmentPath = fileURLToPath(new URL('../..', import.meta.url));
   const extensionTestsPath = fileURLToPath(new URL('./suite/index.js', import.meta.url));
 
   // A short --user-data-dir outside the repository: this project's own path is deep enough that
