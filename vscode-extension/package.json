@@ -1,0 +1,81 @@
+{
+  "name": "tql-vscode",
+  "displayName": "Test Quality Linter",
+  "description": "Flags Java tests that pass but prove nothing: tautological assertions, tests with no assertion, hard-coded sleeps and more.",
+  "version": "1.0.0",
+  "private": true,
+  "license": "Apache-2.0",
+  "publisher": "byreshb",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/byreshb/test-quality-linter.git",
+    "directory": "vscode-extension"
+  },
+  "engines": {
+    "vscode": "^1.137.0",
+    "node": ">=22"
+  },
+  "categories": [
+    "Linters"
+  ],
+  "activationEvents": [
+    "onLanguage:java"
+  ],
+  "main": "./dist/extension/index.js",
+  "type": "module",
+  "contributes": {
+    "commands": [
+      {
+        "command": "tql.explainRule",
+        "title": "TQL: Explain rule"
+      }
+    ],
+    "configuration": {
+      "title": "Test Quality Linter",
+      "properties": {
+        "tql.jarPath": {
+          "type": "string",
+          "default": "",
+          "description": "Path to a tql-cli jar. Leave empty to download and cache the matching release jar on first use."
+        },
+        "tql.version": {
+          "type": "string",
+          "default": "",
+          "description": "tql release version to download when tql.jarPath is empty. Defaults to this extension's own version."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "build": "ncc build src/extension.ts -o dist/extension --minify -e vscode && ncc build src/server/server.ts -o dist/server --minify",
+    "package": "npm run build && vsce package --no-dependencies -o tql-vscode.vsix",
+    "test:unit": "vitest run",
+    "test:extension": "node dist-test/test/runTest.js",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "check": "tsc --noEmit && npm run lint && prettier --check .",
+    "test": "npm run test:unit",
+    "pretest:extension": "tsc -p tsconfig.test.json"
+  },
+  "devDependencies": {
+    "@types/mocha": "10.0.10",
+    "@types/node": "22.20.2",
+    "@types/vscode": "1.137.0",
+    "@vercel/ncc": "0.45.0",
+    "@vitest/coverage-v8": "3.2.7",
+    "@vscode/test-electron": "3.1.0",
+    "@vscode/vsce": "4.0.0",
+    "eslint": "9.39.5",
+    "glob": "13.0.6",
+    "mocha": "12.0.1",
+    "prettier": "3.9.6",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.70.0",
+    "vitest": "3.2.7"
+  },
+  "dependencies": {
+    "vscode-languageclient": "10.1.1",
+    "vscode-languageserver": "10.1.1",
+    "vscode-languageserver-textdocument": "1.0.14"
+  }
+}

@@ -24,17 +24,37 @@ jobs:
           java-version: '17'
           cache: maven
 
-      - name: Check tag matches pom version
+      - name: Set up Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: vscode-extension/package-lock.json
+
+      - name: Check tag matches pom and package versions
         run: |
-          pom_version=$(mvn -q help:evaluate -Dexpression=project.version -DforceStdout)
           tag_version="${GITHUB_REF_NAME#v}"
-          if [ "$pom_version" != "$tag_version" ]; then
-            echo "Tag v$tag_version does not match pom version $pom_version" >&2
-            exit 1
-          fi
+          pom_version=$(mvn -q help:evaluate -Dexpression=project.version -DforceStdout)
+          action_version=$(node -p "require('./action/package.json').version")
+          vscode_version=$(node -p "require('./vscode-extension/package.json').version")
+          fail=0
+          for pair in "pom:$pom_version" "action:$action_version" "vscode-extension:$vscode_version"; do
+            name="${pair%%:*}"; version="${pair#*:}"
+            if [ "$version" != "$tag_version" ]; then
+              echo "Tag v$tag_version does not match $name version $version" >&2
+              fail=1
+            fi
+          done
+          exit $fail
 
       - name: Build jars (tests run in the CI workflow)
         run: mvn -B package -DskipTests
+
+      - name: Package the VS Code extension
+        working-directory: vscode-extension
+        run: |
+          npm ci
+          npm run package
 
       - name: Extract release notes from CHANGELOG
         run: |
@@ -53,3 +73,4 @@ jobs:
           body_path: release-notes.md
           files: |
             */target/tql-*.jar
+            vscode-extension/tql-vscode.vsix

@@ -7,6 +7,14 @@ All notable changes to this project are documented here. The format follows
 ## [Unreleased]
 
 ### Added
+- `vscode-extension/`: the `tql-vscode` VS Code extension, structured as a language server
+  (`vscode-languageserver`) so any LSP-capable editor can reuse it. Lints on open and on save for
+  recognised Java test files, shows findings as inline diagnostics with the rule id, severity and
+  fix hint, offers a quick fix that inserts `// tql:ignore <id>`, and adds a **TQL: Explain rule**
+  command. Downloads and caches the matching `tql-cli` release jar on first use (or a configured
+  `tql.jarPath`). Unit-tested with Vitest (85% line threshold) and, for the extension itself,
+  with `@vscode/test-electron` against a real VS Code instance. `.vsix` packaging (`@vscode/vsce`)
+  is wired into the release workflow; publishing to the Marketplace is planned, not done yet.
 - `action/`: a TypeScript GitHub Action (`byreshb/test-quality-linter/action@v1`). Downloads the
   matching `tql-cli` release jar, runs `tql lint --format sarif`, uploads the SARIF directly to
   GitHub's code-scanning REST API (no separate `upload-sarif` step needed), writes a job summary

@@ -1,0 +1,17 @@
+src/**
+test/**
+dist-test/**
+coverage/**
+.vscode-test/**
+node_modules/**
+*.test.ts
+*.tsbuildinfo
+tsconfig.json
+tsconfig.test.json
+vitest.config.ts
+eslint.config.js
+.prettierrc.json
+.prettierignore
+.gitignore
+package-lock.json
+*.map

@@ -88,6 +88,14 @@ the [`action/`](action) package directly:
     fail-on: error
 ```
 
+### VS Code
+
+[`vscode-extension/`](vscode-extension) lints Java test files on open and save, right in the
+editor: inline diagnostics with the rule id and fix hint, a quick fix that inserts
+`// tql:ignore <id>`, and a **TQL: Explain rule** command. Install the `.vsix` from a
+[GitHub Release](https://github.com/byreshb/test-quality-linter/releases) (Marketplace publishing
+is planned, not done yet) with **Extensions → … → Install from VSIX…**.
+
 ### Maven plugin
 
 Binds `tql:lint` to the `verify` phase:

@@ -113,6 +113,30 @@ coverage threshold the same way `tql-cli`'s `Main.main` is; `index.ts` is the tw
 point `action.yml` points at. `@vercel/ncc` bundles `src/index.ts` into a dependency-free
 `dist/index.js`, committed because consumers run the action straight from a repository ref.
 
+## `vscode-extension/` (TypeScript)
+
+Structured as an LSP client and server so the linting logic is not VS Code-specific. The server
+(`src/server/server.ts`) is the whole implementation: on `textDocument/didOpen` and
+`textDocument/didSave`, for files `src/testFile.ts` recognises as tests, it spawns `java -jar
+<jar> lint <file> --format json`, maps the JSON findings to LSP `Diagnostic`s
+(`src/server/diagnostics.ts`), and answers `textDocument/codeAction` with a quick fix that
+appends `// tql:ignore <id>` (`src/server/codeActions.ts`). `src/extension.ts` is a thin client:
+it resolves `tql.jarPath` or downloads and caches the matching release jar
+(`src/download.ts`, near-identical to the GitHub Action's, kept as a separate copy since the two
+are independent npm packages), launches the server as a child process over IPC via
+`vscode-languageclient`, and registers **TQL: Explain rule**. `@vercel/ncc` bundles the client and
+the server into separate `dist/extension` and `dist/server` outputs (the server must stay
+dependency-free of the `vscode` module so it can run outside VS Code); `@vscode/vsce` packages
+`dist/`, `package.json`, `LICENSE` and the README into the `.vsix`, everything else excluded by
+`.vscodeignore`.
+
+Tested at two levels, per the house rule of testing the extension with the real thing: Vitest
+over every module in `src/` except `extension.ts` and `server.ts` themselves (thin glue,
+excluded from the coverage threshold, the same as `tql-cli`'s `Main.main`), and
+`@vscode/test-electron` (`test/runTest.ts`, `test/suite/*.test.ts`) driving an actual downloaded
+VS Code instance to confirm the extension activates, registers its command, and contributes its
+settings.
+
 ## `tql-benchmark`
 
 A fourth module, excluded from the coverage gate (`jacoco.skip=true`) since its own domain

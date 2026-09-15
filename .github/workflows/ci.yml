@@ -47,8 +47,8 @@ jobs:
             **/target/tql/
           if-no-files-found: ignore
 
-  node:
-    name: Build and test (Node)
+  action:
+    name: Build and test (GitHub Action)
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
@@ -80,3 +80,40 @@ jobs:
         run: |
           npm run build
           git diff --exit-code dist/
+
+  vscode-extension:
+    name: Build and test (VS Code extension)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: vscode-extension/package-lock.json
+
+      - name: Install dependencies
+        working-directory: vscode-extension
+        run: npm ci
+
+      - name: Check formatting, types and lint
+        working-directory: vscode-extension
+        run: npm run check
+
+      - name: Unit test the server and client logic
+        working-directory: vscode-extension
+        run: npm run test:unit
+
+      - name: Install a virtual display for the extension test host
+        run: sudo apt-get update && sudo apt-get install -y xvfb
+
+      - name: Run the extension in a real VS Code instance
+        working-directory: vscode-extension
+        run: |
+          npm run pretest:extension
+          xvfb-run -a npm run test:extension
