@@ -22,7 +22,13 @@ async function main(): Promise<void> {
   await runTests({
     extensionDevelopmentPath,
     extensionTestsPath,
-    launchArgs: ['--user-data-dir', userDataDir],
+    launchArgs: [
+      '--user-data-dir',
+      userDataDir,
+      // CI runners disable the namespaces Chromium's sandbox needs, and have no real GPU.
+      '--no-sandbox',
+      '--disable-gpu',
+    ],
   });
 }
 
