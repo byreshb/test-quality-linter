@@ -6,6 +6,13 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+- `tql-benchmark`: 47 hand-written tests (23 deliberately weak, labelled with the rule id each
+  should trigger; 24 clean), a `BenchmarkRunner` that runs the linter and reads a PIT mutation
+  report to regenerate `docs/benchmark.md` with precision/recall per rule and mutation score of
+  flagged vs clean tests. Excluded from the coverage gate; not bound to any build phase (PIT is
+  slow), run on demand.
+
 ## [1.0.0] - 2026-09-14
 
 ### Added

@@ -22,9 +22,9 @@ noise to suppress.
 
 ## Status
 
-v1.0.0: every rule (TQL001-TQL012), console/JSON/SARIF/Markdown output, the `tql` command line
-and the Maven plugin below. See [CHANGELOG.md](CHANGELOG.md) for what shipped in each increment.
-The mutation-testing benchmark is next, targeted at v1.1.0.
+Every rule (TQL001-TQL012), console/JSON/SARIF/Markdown output, the `tql` command line, the
+Maven plugin, and a mutation-testing benchmark that validates the rules with real numbers (see
+below). See [CHANGELOG.md](CHANGELOG.md) for what shipped in each increment.
 
 ## Requirements
 
@@ -205,6 +205,27 @@ formatting check, full test suite with the coverage gate, and upload of the Sure
 
 Full steps, including the planned but not yet configured Maven Central publishing, are in
 [docs/releasing.md](docs/releasing.md).
+
+## Benchmark
+
+[`tql-benchmark`](tql-benchmark) is a sample project of 47 hand-written JUnit tests, 23 of them
+deliberately weak in the exact style each rule targets and labelled with the rule id they should
+trigger, the other 24 ordinary clean tests. Running `tql` against it and mutation testing the
+result with [PIT](https://pitest.org/) gives two real numbers rather than an assertion that the
+rules matter:
+
+- Every rule's precision and recall against the planted labels: **100%** across all twelve.
+- Mutants killed per test, averaged: **0.30** for the tests `tql` flags, **1.38** for the ones it
+  leaves clean, a tests `tql` flags kill roughly a fifth as many mutants as the ones it does not.
+
+Full breakdown, including a line-by-line findings table, in [docs/benchmark.md](docs/benchmark.md).
+Regenerate it with:
+
+```bash
+mvn -pl tql-benchmark -am install -DskipTests
+mvn -pl tql-benchmark org.pitest:pitest-maven:mutationCoverage
+mvn -pl tql-benchmark exec:java@benchmark-report
+```
 
 ## License
 

@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>io.github.byreshb</groupId>
+    <artifactId>test-quality-linter</artifactId>
+    <version>1.0.1-SNAPSHOT</version>
+  </parent>
+
+  <artifactId>tql-benchmark</artifactId>
+  <packaging>jar</packaging>
+
+  <name>Test Quality Linter Benchmark</name>
+  <description>
+    A sample project of hand-written clean tests and deliberately weak tests in the styles the
+    rules target, used to validate the rules with mutation testing (see docs/benchmark.md). This
+    module is excluded from the coverage gate: its point is the planted weak tests, not coverage
+    of its own tiny domain classes.
+  </description>
+
+  <properties>
+    <!-- Not a quality target: the domain classes exist to be mutated, and half the tests are
+         deliberately weak by design. -->
+    <jacoco.skip>true</jacoco.skip>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>io.github.byreshb</groupId>
+      <artifactId>tql-core</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <!--
+        Not bound to any phase: mutation testing is slow and this module's coverage is
+        intentionally not gated, so it never runs as part of "mvn verify". Regenerate the
+        report with "mvn -pl tql-benchmark org.pitest:pitest-maven:mutationCoverage", then
+        "mvn -pl tql-benchmark exec:java@benchmark-report" (see docs/benchmark.md).
+      -->
+      <plugin>
+        <groupId>org.pitest</groupId>
+        <artifactId>pitest-maven</artifactId>
+        <version>${pitest-maven.version}</version>
+        <configuration>
+          <targetClasses>
+            <param>io.github.byreshb.tql.benchmark.*</param>
+          </targetClasses>
+          <targetTests>
+            <param>io.github.byreshb.tql.benchmark.*</param>
+          </targetTests>
+          <outputFormats>
+            <outputFormat>XML</outputFormat>
+            <outputFormat>HTML</outputFormat>
+          </outputFormats>
+          <timestampedReports>false</timestampedReports>
+        </configuration>
+        <dependencies>
+          <dependency>
+            <groupId>org.pitest</groupId>
+            <artifactId>pitest-junit5-plugin</artifactId>
+            <version>${pitest-junit5-plugin.version}</version>
+          </dependency>
+        </dependencies>
+      </plugin>
+
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <version>${exec-maven-plugin.version}</version>
+        <executions>
+          <execution>
+            <id>benchmark-report</id>
+            <goals>
+              <goal>java</goal>
+            </goals>
+            <configuration>
+              <mainClass>io.github.byreshb.tql.benchmark.tool.BenchmarkRunner</mainClass>
+              <classpathScope>test</classpathScope>
+              <workingDirectory>${project.basedir}</workingDirectory>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>

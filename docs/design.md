@@ -96,6 +96,22 @@ trivial, deliberately uncovered wrapper. `maven-shade-plugin` packages `tql-cli`
 executable jar, with a `ServicesResourceTransformer` so the `ServiceLoader`-based rule discovery
 in the shaded jar still works.
 
+## `tql-benchmark`
+
+A fourth module, excluded from the coverage gate (`jacoco.skip=true`) since its own domain
+classes exist to be mutated and half its tests are deliberately weak by design. Its test sources
+under `src/test/java` ARE the fixture: 47 JUnit tests, the weak ones marked with a `@Weak`
+annotation naming the rule id(s) they are planted to trigger, so the ground truth lives next to
+the code it describes rather than in a separate label file. `BenchmarkRunner` (`mvn -pl
+tql-benchmark exec:java@benchmark-report`, not bound to any lifecycle phase since it is meant to
+be run on demand, after a `pitest-maven:mutationCoverage` run) does three things: reads that
+ground truth by reflection, runs `Linter.withClasspath` over the planted sources and attributes
+each finding back to its enclosing test method by re-parsing the file with JavaParser (a
+`Finding` only carries a line and column), and parses PIT's `mutations.xml` for each mutant's
+`killingTest` to count mutants killed per test method. `BenchmarkReport` turns the three into
+`docs/benchmark.md`: precision and recall per rule against the planted labels, and the average
+mutants killed by tests the linter flagged versus tests it left clean.
+
 ## `tql-maven-plugin`
 
 A third module, depending on `tql-core` and the Maven plugin API/annotations. `LintMojo` is the
