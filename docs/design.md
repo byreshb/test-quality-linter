@@ -73,6 +73,21 @@ disables it. `RuleContext.symbolsResolved()` tells a rule which mode is in effec
 needs a call's declared type (`UnusedTestResult` is the first: it needs to know whether a call
 returns void) can report nothing rather than guess when no classpath was given.
 
+## Suppressions and configuration
+
+`Linter.lint` runs each enabled rule over a file, then passes the file's raw findings through
+`Suppressions.filter` (package-private, `io.github.byreshb.tql.engine`) before they reach the
+result: a finding whose line carries a trailing `// tql:ignore` comment, or whose position falls
+inside a declaration annotated `@SuppressWarnings("tql:...")`, is dropped there rather than
+produced by the rule itself, so no rule needs to know about suppression.
+
+`RuleConfigLoader` (`io.github.byreshb.tql.rule`) turns a `.tql.yaml` file into a `RuleConfig`
+using snakeyaml's `Yaml.load`, which already turns YAML mappings, sequences, integers, booleans
+and strings into the plain `Map`/`List`/`Object` values `RuleConfig.Builder.option` accepts, so no
+YAML-specific type exists in the rule API itself. A structurally wrong file raises
+`IllegalArgumentException` immediately rather than degrading to defaults, on the view that a
+config file that fails to apply should be loud about it.
+
 ## Extension points
 
 - **A new rule** is a class implementing `Rule` (or extending `AbstractRule`), registered in

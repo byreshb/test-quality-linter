@@ -34,6 +34,7 @@
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
     <javaparser.version>3.27.0</javaparser.version>
+    <snakeyaml.version>2.4</snakeyaml.version>
     <junit.version>5.12.2</junit.version>
     <assertj.version>3.27.3</assertj.version>
 
@@ -59,6 +60,11 @@
         <groupId>com.github.javaparser</groupId>
         <artifactId>javaparser-symbol-solver-core</artifactId>
         <version>${javaparser.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.yaml</groupId>
+        <artifactId>snakeyaml</artifactId>
+        <version>${snakeyaml.version}</version>
       </dependency>
       <dependency>
         <groupId>org.assertj</groupId>

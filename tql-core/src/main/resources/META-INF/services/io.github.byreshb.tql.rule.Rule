@@ -5,5 +5,8 @@ io.github.byreshb.tql.rules.AssertsOnStub
 io.github.byreshb.tql.rules.VerifyOnly
 io.github.byreshb.tql.rules.HardcodedSleep
 io.github.byreshb.tql.rules.SwallowedException
+io.github.byreshb.tql.rules.DuplicateTestBody
+io.github.byreshb.tql.rules.DisabledWithoutReason
+io.github.byreshb.tql.rules.ContradictoryMessage
 io.github.byreshb.tql.rules.UnusedTestResult
 io.github.byreshb.tql.rules.MockOfTypeUnderTest

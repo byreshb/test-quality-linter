@@ -14,11 +14,14 @@ step 5).
 | [TQL005](TQL005.md) | VerifyOnly | WARN | A test contains only mock verifications and no assertion on an observable outcome. |
 | [TQL006](TQL006.md) | HardcodedSleep | WARN | A fixed sleep or timeout is used instead of waiting for a condition. |
 | [TQL007](TQL007.md) | SwallowedException | WARN | A catch block in a test is empty or only prints or logs the exception. |
+| [TQL008](TQL008.md) | DuplicateTestBody | WARN | Two test methods in the same class have identical bodies. |
+| [TQL009](TQL009.md) | DisabledWithoutReason | WARN | @Disabled or @Ignore has no reason, or has stood disabled past the configured age. |
+| [TQL010](TQL010.md) | ContradictoryMessage | INFO | An assertion's message says the opposite of what the assertion checks. |
 | [TQL011](TQL011.md) | UnusedTestResult | WARN | A call's return value is discarded as a bare statement and never checked. |
 | [TQL012](TQL012.md) | MockOfTypeUnderTest | WARN | The class named in the test class name is mocked instead of exercised. |
 
-Rules planned for the next increment: TQL008 DuplicateTestBody, TQL009 DisabledWithoutReason,
-TQL010 ContradictoryMessage.
+Every rule of the planned set now exists. See [../configuration.md](../configuration.md) for
+`.tql.yaml`, severity overrides, options and suppressions.
 
 TQL011 needs symbol resolution (a classpath) to work; without one it reports nothing rather than
 guess a call's return type. Every other rule works from syntax alone.

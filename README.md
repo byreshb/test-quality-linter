@@ -98,10 +98,15 @@ src/test/java/com/acme/OrderServiceTest.java
 | [TQL005](docs/rules/TQL005.md) | VerifyOnly | WARN | A test contains only mock verifications and no assertion on an observable outcome. |
 | [TQL006](docs/rules/TQL006.md) | HardcodedSleep | WARN | A fixed sleep or timeout is used instead of waiting for a condition. |
 | [TQL007](docs/rules/TQL007.md) | SwallowedException | WARN | A catch block in a test is empty or only prints or logs the exception. |
+| [TQL008](docs/rules/TQL008.md) | DuplicateTestBody | WARN | Two test methods in the same class have identical bodies. |
+| [TQL009](docs/rules/TQL009.md) | DisabledWithoutReason | WARN | @Disabled or @Ignore has no reason, or has stood disabled past the configured age. |
+| [TQL010](docs/rules/TQL010.md) | ContradictoryMessage | INFO | An assertion's message says the opposite of what the assertion checks. |
 | [TQL011](docs/rules/TQL011.md) | UnusedTestResult | WARN | A call's return value is discarded as a bare statement and never checked. |
 | [TQL012](docs/rules/TQL012.md) | MockOfTypeUnderTest | WARN | The class named in the test class name is mocked instead of exercised. |
 
 The full list with bad and fixed examples is in [docs/rules](docs/rules/README.md).
+Configuration (`.tql.yaml`, severity overrides, options, suppressions) is documented in
+[docs/configuration.md](docs/configuration.md).
 
 ## Reference
 

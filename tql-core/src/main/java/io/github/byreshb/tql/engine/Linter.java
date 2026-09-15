@@ -39,6 +39,9 @@ import java.util.stream.Stream;
  * RuleConfig}, then call {@link #lint(Collection)} for in-memory sources or {@link
  * #lintPaths(Collection)} for files and directories.
  *
+ * <p>A finding suppressed by a trailing {@code // tql:ignore} comment or a
+ * {@code @SuppressWarnings("tql:...")} annotation never reaches the result.
+ *
  * <p>By default parsing is syntax-only: fast, and it needs nothing but the sources themselves.
  * Passing a classpath through {@link #Linter(RuleRegistry, RuleConfig, List)} turns on JavaParser's
  * {@link JavaSymbolSolver}, so rules that need to know a call's declared return type (there are
@@ -181,9 +184,11 @@ public final class Linter {
       }
       CompilationUnit unit = parsed.getResult().get();
       RuleContext context = new RuleContext(source, config, symbolsResolved);
+      List<Finding> fileFindings = new ArrayList<>();
       for (Rule rule : enabledRules) {
-        findings.addAll(rule.check(unit, context));
+        fileFindings.addAll(rule.check(unit, context));
       }
+      findings.addAll(Suppressions.filter(unit, source, fileFindings));
     }
     return new LintResult(sources.size(), findings, problems);
   }
