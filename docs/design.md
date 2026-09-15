@@ -62,6 +62,17 @@ testing). Neither the CLI nor the plugin contains logic of its own beyond argume
   Playwright assertions and can find the root of a fluent chain (`assertThat(x)` in
   `assertThat(x).as("...").isEqualTo(y)`).
 
+## Symbol resolution
+
+`Linter` parses syntax-only by default: fast, and correct on any checkout without needing the
+project to compile first. Passing a classpath (`new Linter(registry, config, classpath)`, or
+`Linter.withClasspath(classpath)`) turns on JavaParser's `JavaSymbolSolver`, combining a
+`ReflectionTypeSolver` for the JDK with a `ClassLoaderTypeSolver` over the given jars and class
+directories. An empty classpath list still enables resolution for JDK types; passing `null`
+disables it. `RuleContext.symbolsResolved()` tells a rule which mode is in effect, so a rule that
+needs a call's declared type (`UnusedTestResult` is the first: it needs to know whether a call
+returns void) can report nothing rather than guess when no classpath was given.
+
 ## Extension points
 
 - **A new rule** is a class implementing `Rule` (or extending `AbstractRule`), registered in

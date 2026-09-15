@@ -5,6 +5,10 @@ import com.github.javaparser.ParseResult;
 import com.github.javaparser.ParserConfiguration;
 import com.github.javaparser.Problem;
 import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.symbolsolver.JavaSymbolSolver;
+import com.github.javaparser.symbolsolver.resolution.typesolvers.ClassLoaderTypeSolver;
+import com.github.javaparser.symbolsolver.resolution.typesolvers.CombinedTypeSolver;
+import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeSolver;
 import io.github.byreshb.tql.model.Finding;
 import io.github.byreshb.tql.model.LintResult;
 import io.github.byreshb.tql.model.ParseProblem;
@@ -15,6 +19,9 @@ import io.github.byreshb.tql.rule.RuleContext;
 import io.github.byreshb.tql.rule.RuleRegistry;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -31,6 +38,13 @@ import java.util.stream.Stream;
  * <p>A linter is immutable and safe to reuse: create one with a {@link RuleRegistry} and a {@link
  * RuleConfig}, then call {@link #lint(Collection)} for in-memory sources or {@link
  * #lintPaths(Collection)} for files and directories.
+ *
+ * <p>By default parsing is syntax-only: fast, and it needs nothing but the sources themselves.
+ * Passing a classpath through {@link #Linter(RuleRegistry, RuleConfig, List)} turns on JavaParser's
+ * {@link JavaSymbolSolver}, so rules that need to know a call's declared return type (there are
+ * none among the rules of step 3, and {@code UnusedTestResult} among those added in step 4) can
+ * resolve it. JDK types resolve through reflection even with an empty classpath list; a non-empty
+ * list adds jars and directories of {@code .class} files from the project under test.
  */
 public final class Linter {
 
@@ -38,14 +52,30 @@ public final class Linter {
   private final RuleConfig config;
   private final List<Rule> enabledRules;
   private final List<PathMatcher> excludes;
+  private final JavaSymbolSolver symbolSolver;
+  private final boolean symbolsResolved;
 
   /**
-   * Creates a linter.
+   * Creates a syntax-only linter: no classpath, so {@link RuleContext#symbolsResolved()} is false
+   * for every file.
    *
    * @param registry the rules to choose from
    * @param config which of them run, with what severity and options, and which files to skip
    */
   public Linter(RuleRegistry registry, RuleConfig config) {
+    this(registry, config, null);
+  }
+
+  /**
+   * Creates a linter, optionally with symbol resolution.
+   *
+   * @param registry the rules to choose from
+   * @param config which of them run, with what severity and options, and which files to skip
+   * @param classpath jars and directories of {@code .class} files to resolve types against, in
+   *     addition to the JDK; {@code null} disables symbol resolution entirely, while an empty list
+   *     still enables it for JDK types
+   */
+  public Linter(RuleRegistry registry, RuleConfig config, List<Path> classpath) {
     this.registry = Objects.requireNonNull(registry, "registry");
     this.config = Objects.requireNonNull(config, "config");
     this.enabledRules = registry.enabled(config);
@@ -53,15 +83,28 @@ public final class Linter {
         config.excludes().stream()
             .map(glob -> FileSystems.getDefault().getPathMatcher("glob:" + glob))
             .toList();
+    this.symbolsResolved = classpath != null;
+    this.symbolSolver = symbolsResolved ? buildSymbolSolver(classpath) : null;
   }
 
   /**
-   * A linter with every discovered rule enabled at its default severity.
+   * A linter with every discovered rule enabled at its default severity and no symbol resolution.
    *
    * @return the linter
    */
   public static Linter withDefaults() {
     return new Linter(RuleRegistry.discover(), RuleConfig.defaults());
+  }
+
+  /**
+   * A linter with every discovered rule enabled at its default severity, resolving types against
+   * the given classpath in addition to the JDK.
+   *
+   * @param classpath jars and directories of {@code .class} files
+   * @return the linter
+   */
+  public static Linter withClasspath(List<Path> classpath) {
+    return new Linter(RuleRegistry.discover(), RuleConfig.defaults(), classpath);
   }
 
   /**
@@ -89,6 +132,15 @@ public final class Linter {
    */
   public List<Rule> enabledRules() {
     return enabledRules;
+  }
+
+  /**
+   * Whether this linter resolves symbols, i.e. was built with a (possibly empty) classpath.
+   *
+   * @return true when a classpath was given
+   */
+  public boolean symbolsResolved() {
+    return symbolsResolved;
   }
 
   /**
@@ -120,14 +172,15 @@ public final class Linter {
   public LintResult lint(Collection<SourceFile> sources) {
     List<Finding> findings = new ArrayList<>();
     List<ParseProblem> problems = new ArrayList<>();
+    JavaParser parser = newParser();
     for (SourceFile source : sources) {
-      ParseResult<CompilationUnit> parsed = newParser().parse(source.content());
+      ParseResult<CompilationUnit> parsed = parser.parse(source.content());
       if (!parsed.isSuccessful() || parsed.getResult().isEmpty()) {
         problems.add(toProblem(source, parsed));
         continue;
       }
       CompilationUnit unit = parsed.getResult().get();
-      RuleContext context = new RuleContext(source, config, false);
+      RuleContext context = new RuleContext(source, config, symbolsResolved);
       for (Rule rule : enabledRules) {
         findings.addAll(rule.check(unit, context));
       }
@@ -150,12 +203,35 @@ public final class Linter {
     return false;
   }
 
-  private static JavaParser newParser() {
+  private JavaParser newParser() {
     ParserConfiguration configuration =
         new ParserConfiguration()
             .setLanguageLevel(ParserConfiguration.LanguageLevel.JAVA_17)
             .setLexicalPreservationEnabled(false);
+    if (symbolSolver != null) {
+      configuration.setSymbolResolver(symbolSolver);
+    }
     return new JavaParser(configuration);
+  }
+
+  private static JavaSymbolSolver buildSymbolSolver(List<Path> classpath) {
+    CombinedTypeSolver combined = new CombinedTypeSolver();
+    combined.add(new ReflectionTypeSolver());
+    URL[] urls = new URL[classpath.size()];
+    for (int i = 0; i < classpath.size(); i++) {
+      urls[i] = toUrl(classpath.get(i));
+    }
+    combined.add(
+        new ClassLoaderTypeSolver(new URLClassLoader(urls, Linter.class.getClassLoader())));
+    return new JavaSymbolSolver(combined);
+  }
+
+  private static URL toUrl(Path path) {
+    try {
+      return path.toUri().toURL();
+    } catch (MalformedURLException e) {
+      throw new IllegalArgumentException("Invalid classpath entry: " + path, e);
+    }
   }
 
   private static ParseProblem toProblem(SourceFile source, ParseResult<CompilationUnit> parsed) {

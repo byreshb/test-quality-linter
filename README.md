@@ -94,8 +94,12 @@ src/test/java/com/acme/OrderServiceTest.java
 | [TQL001](docs/rules/TQL001.md) | TautologicalAssertion | ERROR | An assertion compares an expression with itself or can never fail. |
 | [TQL002](docs/rules/TQL002.md) | ConstantAssertion | ERROR | Both sides of an assertion are literals or compile-time constants. |
 | [TQL003](docs/rules/TQL003.md) | NoAssertion | WARN | A test method has no assertion, verification or expected exception. |
+| [TQL004](docs/rules/TQL004.md) | AssertsOnStub | ERROR | An assertion compares a mock's return value to the literal it was stubbed with. |
+| [TQL005](docs/rules/TQL005.md) | VerifyOnly | WARN | A test contains only mock verifications and no assertion on an observable outcome. |
 | [TQL006](docs/rules/TQL006.md) | HardcodedSleep | WARN | A fixed sleep or timeout is used instead of waiting for a condition. |
 | [TQL007](docs/rules/TQL007.md) | SwallowedException | WARN | A catch block in a test is empty or only prints or logs the exception. |
+| [TQL011](docs/rules/TQL011.md) | UnusedTestResult | WARN | A call's return value is discarded as a bare statement and never checked. |
+| [TQL012](docs/rules/TQL012.md) | MockOfTypeUnderTest | WARN | The class named in the test class name is mocked instead of exercised. |
 
 The full list with bad and fixed examples is in [docs/rules](docs/rules/README.md).
 
