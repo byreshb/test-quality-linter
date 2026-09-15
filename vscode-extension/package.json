@@ -2,7 +2,7 @@
   "name": "tql-vscode",
   "displayName": "Test Quality Linter",
   "description": "Flags Java tests that pass but prove nothing: tautological assertions, tests with no assertion, hard-coded sleeps and more.",
-  "version": "1.1.0",
+  "version": "1.1.1-dev",
   "private": true,
   "license": "Apache-2.0",
   "publisher": "byreshb",
