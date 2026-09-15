@@ -80,6 +80,32 @@ tql lint src/test/java --format sarif > target/tql.sarif
 
 See [docs/ci-integration.md](docs/ci-integration.md) for the full GitHub Actions workflow.
 
+### Maven plugin
+
+Binds `tql:lint` to the `verify` phase:
+
+```xml
+<plugin>
+  <groupId>io.github.byreshb</groupId>
+  <artifactId>tql-maven-plugin</artifactId>
+  <version>1.0.0</version>
+  <executions>
+    <execution>
+      <goals>
+        <goal>lint</goal>
+      </goals>
+    </execution>
+  </executions>
+</plugin>
+```
+
+Scans `${project.build.testSourceDirectory}` (`src/test/java` by default), always writes a SARIF
+report to `target/tql/tql.sarif`, and fails the build (`MojoFailureException`) on a finding at or
+above `failOnSeverity` (default `ERROR`) or a file that could not be parsed. Parameters, each
+also settable as a `-Dtql.<name>=...` system property: `testSourceDirectory`, `configFile`
+(defaults to `.tql.yaml` in the project's base directory), `failOnSeverity`, `outputDirectory`
+(default `target/tql`), `skip`.
+
 ### Commands
 
 - `tql lint <paths...> [--config FILE] [--format console|json|sarif|md] [--classpath PATH] [--fail-on info|warn|error]`

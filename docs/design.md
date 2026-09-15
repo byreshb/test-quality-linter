@@ -96,6 +96,17 @@ trivial, deliberately uncovered wrapper. `maven-shade-plugin` packages `tql-cli`
 executable jar, with a `ServicesResourceTransformer` so the `ServiceLoader`-based rule discovery
 in the shaded jar still works.
 
+## `tql-maven-plugin`
+
+A third module, depending on `tql-core` and the Maven plugin API/annotations. `LintMojo` is the
+whole plugin: bound to the `verify` phase, it lints `${project.build.testSourceDirectory}`, logs
+each finding through the Maven build log at a level matching its severity, always writes a SARIF
+report (so CI can upload it whether the build passed or failed), and throws
+`MojoFailureException` when a finding reaches `failOnSeverity` or a file failed to parse. Its
+`@Parameter`-annotated fields are package-private rather than `private`, which lets
+`LintMojoTest` set them directly and call `execute()` on a plain instance, skipping the weight of
+`maven-plugin-testing-harness` for a Mojo with configuration this simple.
+
 ## Suppressions and configuration
 
 `Linter.lint` runs each enabled rule over a file, then passes the file's raw findings through

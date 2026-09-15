@@ -30,6 +30,9 @@ All notable changes to this project are documented here. The format follows
 - `tql-cli`: the `tql` command (`lint`, `rules`, `explain`), packaged as a shaded executable jar
   by `maven-shade-plugin`. `docs/ci-integration.md` documents uploading SARIF to GitHub code
   scanning.
+- `tql-maven-plugin`: `tql:lint`, bound to the `verify` phase by default, scanning
+  `src/test/java`, writing a SARIF report to `target/tql/tql.sarif` and failing the build on a
+  finding at or above `failOnSeverity` (default `ERROR`) or an unparseable file.
 - Multi-module Maven build (`tql-core`) with automatic formatting (Spotless,
   google-java-format), JaCoCo coverage gate at 85%, GitHub Actions CI and release workflows.
 
