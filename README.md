@@ -22,9 +22,9 @@ noise to suppress.
 
 ## Status
 
-Every rule (TQL001-TQL012) is implemented, along with console, JSON, SARIF and Markdown output
-and the `tql` command line below. See [CHANGELOG.md](CHANGELOG.md) for what shipped in each
-increment. The Maven plugin and the mutation-testing benchmark follow.
+v1.0.0: every rule (TQL001-TQL012), console/JSON/SARIF/Markdown output, the `tql` command line
+and the Maven plugin below. See [CHANGELOG.md](CHANGELOG.md) for what shipped in each increment.
+The mutation-testing benchmark is next, targeted at v1.1.0.
 
 ## Requirements
 
@@ -52,7 +52,7 @@ java -jar tql-cli/target/tql-cli-*.jar --help
 <dependency>
   <groupId>io.github.byreshb</groupId>
   <artifactId>tql-core</artifactId>
-  <version>1.0.0-SNAPSHOT</version>
+  <version>1.0.0</version>
 </dependency>
 ```
 
