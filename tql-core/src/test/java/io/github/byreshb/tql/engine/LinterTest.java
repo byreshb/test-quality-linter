@@ -41,7 +41,7 @@ class LinterTest {
       class GoodTest {
         @Test
         void sum() {
-          assertEquals(2, 1 + 1);
+          assertEquals(2, Math.addExact(1, 1));
         }
       }
       """;

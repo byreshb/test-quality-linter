@@ -1,7 +1,9 @@
 package io.github.byreshb.tql.rule;
 
 import com.github.javaparser.ast.expr.Expression;
+import com.github.javaparser.ast.expr.FieldAccessExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
+import com.github.javaparser.ast.expr.NameExpr;
 import java.util.Optional;
 import java.util.Set;
 
@@ -68,7 +70,31 @@ public final class Assertions {
    */
   public static boolean isAssertion(MethodCallExpr call) {
     String name = call.getNameAsString();
-    return STATIC_ASSERTIONS.contains(name) || FLUENT_ENTRY_POINTS.contains(name);
+    return (STATIC_ASSERTIONS.contains(name) || FLUENT_ENTRY_POINTS.contains(name))
+        && hasStaticLikeScope(call);
+  }
+
+  /**
+   * Whether a call has no scope or a scope that looks like a class name ({@code
+   * Assertions.assertEquals}), as opposed to an instance ({@code service.fail()}).
+   *
+   * @param call the method call
+   * @return true when the call could be a static assertion call
+   */
+  public static boolean hasStaticLikeScope(MethodCallExpr call) {
+    Optional<Expression> scope = call.getScope();
+    if (scope.isEmpty()) {
+      return true;
+    }
+    String last;
+    if (scope.get() instanceof NameExpr name) {
+      last = name.getNameAsString();
+    } else if (scope.get() instanceof FieldAccessExpr access) {
+      last = access.getNameAsString();
+    } else {
+      return false;
+    }
+    return !last.isEmpty() && Character.isUpperCase(last.charAt(0));
   }
 
   /**

@@ -21,6 +21,10 @@ class AssertionsTest {
     assertThat(Assertions.isAssertion(call("fail(\"boom\")"))).isTrue();
     assertThat(Assertions.isAssertion(call("service.save(x)"))).isFalse();
     assertThat(Assertions.isAssertion(call("verify(mock).save(x)"))).isFalse();
+    assertThat(Assertions.isAssertion(call("service.fail()"))).isFalse();
+    assertThat(Assertions.isAssertion(call("this.assertThat(x)"))).isFalse();
+    assertThat(Assertions.isAssertion(call("org.junit.Assert.assertTrue(x)"))).isTrue();
+    assertThat(Assertions.hasStaticLikeScope(call("foo().assertThat(x)"))).isFalse();
   }
 
   @Test

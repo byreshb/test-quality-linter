@@ -92,6 +92,10 @@ src/test/java/com/acme/OrderServiceTest.java
 | Id | Name | Severity | What it catches |
 |----|------|----------|-----------------|
 | [TQL001](docs/rules/TQL001.md) | TautologicalAssertion | ERROR | An assertion compares an expression with itself or can never fail. |
+| [TQL002](docs/rules/TQL002.md) | ConstantAssertion | ERROR | Both sides of an assertion are literals or compile-time constants. |
+| [TQL003](docs/rules/TQL003.md) | NoAssertion | WARN | A test method has no assertion, verification or expected exception. |
+| [TQL006](docs/rules/TQL006.md) | HardcodedSleep | WARN | A fixed sleep or timeout is used instead of waiting for a condition. |
+| [TQL007](docs/rules/TQL007.md) | SwallowedException | WARN | A catch block in a test is empty or only prints or logs the exception. |
 
 The full list with bad and fixed examples is in [docs/rules](docs/rules/README.md).
 
