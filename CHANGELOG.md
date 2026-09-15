@@ -25,6 +25,11 @@ All notable changes to this project are documented here. The format follows
   enum or field.
 - `.tql.yaml` configuration loading (`RuleConfigLoader`): enable/disable, severity overrides,
   per-rule options and exclude globs.
+- `JsonReporter`, `SarifReporter` (SARIF 2.1.0, with a `tool.driver.rules` array) and
+  `MarkdownReporter`, alongside the existing `ConsoleReporter`.
+- `tql-cli`: the `tql` command (`lint`, `rules`, `explain`), packaged as a shaded executable jar
+  by `maven-shade-plugin`. `docs/ci-integration.md` documents uploading SARIF to GitHub code
+  scanning.
 - Multi-module Maven build (`tql-core`) with automatic formatting (Spotless,
   google-java-format), JaCoCo coverage gate at 85%, GitHub Actions CI and release workflows.
 

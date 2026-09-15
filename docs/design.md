@@ -73,6 +73,29 @@ disables it. `RuleContext.symbolsResolved()` tells a rule which mode is in effec
 needs a call's declared type (`UnusedTestResult` is the first: it needs to know whether a call
 returns void) can report nothing rather than guess when no classpath was given.
 
+## Reporters
+
+`io.github.byreshb.tql.output` has one `Reporter` implementation per format: `ConsoleReporter`
+(human-readable, coloured when writing to a terminal), `JsonReporter` and `SarifReporter` (both
+built on a small hand-rolled `Json` string-escaping helper rather than a JSON library, since the
+structure is simple and fixed), and `MarkdownReporter`. `SarifReporter` is constructed with the
+rules the linter ran (for the SARIF `tool.driver.rules` array, which lets a viewer show a rule's
+description even when it triggered nothing) and the linter's own version string; `tql-cli` passes
+`Linter.enabledRules()` and `Cli.version()` (read from the jar manifest) into it.
+
+## `tql-cli`
+
+A second module, depending on `tql-core`, built around three picocli commands: `LintCommand`
+(parses paths and options, builds a `Linter`, picks a `Reporter`, and exits non-zero when a
+finding reaches `--fail-on` or a file failed to parse), `RulesCommand` and `ExplainCommand`
+(both thin wrappers over `RuleRegistry`). `Main.main` is a two-line wrapper around `Cli.execute`,
+which takes the `PrintWriter`s to write to as arguments; tests call `Cli.execute` directly with
+`StringWriter`-backed writers, so the command logic is fully covered without spawning a process or
+touching real standard output, and `Main` itself (the only place that calls `System.exit`) stays a
+trivial, deliberately uncovered wrapper. `maven-shade-plugin` packages `tql-cli` into a single
+executable jar, with a `ServicesResourceTransformer` so the `ServiceLoader`-based rule discovery
+in the shaded jar still works.
+
 ## Suppressions and configuration
 
 `Linter.lint` runs each enabled rule over a file, then passes the file's raw findings through

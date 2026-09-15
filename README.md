@@ -22,10 +22,9 @@ noise to suppress.
 
 ## Status
 
-Work in progress, delivered in increments (see [CHANGELOG.md](CHANGELOG.md)). Today the core
-module parses test sources, runs the rules over them and prints findings on the console. The
-remaining rules, the JSON, SARIF and Markdown reporters, the `tql` command line, the Maven
-plugin and the mutation-testing benchmark follow.
+Every rule (TQL001-TQL012) is implemented, along with console, JSON, SARIF and Markdown output
+and the `tql` command line below. See [CHANGELOG.md](CHANGELOG.md) for what shipped in each
+increment. The Maven plugin and the mutation-testing benchmark follow.
 
 ## Requirements
 
@@ -34,16 +33,20 @@ plugin and the mutation-testing benchmark follow.
 
 ## Install
 
-The linter is not on Maven Central yet (planned, see [docs/releasing.md](docs/releasing.md)).
-Build it once on your machine and install it into your local Maven repository (`~/.m2`):
+Not on Maven Central yet (planned, see [docs/releasing.md](docs/releasing.md)). Two ways to get
+`tql` today:
+
+**Download the CLI jar** from a [GitHub Release](https://github.com/byreshb/test-quality-linter/releases)
+once one exists, or build it from a checkout:
 
 ```bash
 git clone https://github.com/byreshb/test-quality-linter.git
 cd test-quality-linter
-mvn install
+mvn package -pl tql-cli -am -DskipTests
+java -jar tql-cli/target/tql-cli-*.jar --help
 ```
 
-Then depend on the core module from your own build:
+**Depend on `tql-core`** to call the linter from Java: `mvn install` from a checkout, then
 
 ```xml
 <dependency>
@@ -55,7 +58,39 @@ Then depend on the core module from your own build:
 
 ## Quick start
 
-Until the command line and Maven plugin exist, run the linter from Java:
+```bash
+java -jar tql-cli-1.0.0.jar lint src/test/java
+```
+
+```text
+src/test/java/com/acme/OrderServiceTest.java
+  27:5   ERROR  TQL001  assertEquals compares order with itself and cannot fail
+         | assertEquals(order, order);
+         fix: Assert against an expected value that is computed independently of the code under test
+
+1 finding in 12 files (1 error, 0 warnings, 0 info)
+```
+
+`tql` exits non-zero when a finding reaches `--fail-on` (default `ERROR`) or a file could not be
+parsed, so `tql lint src/test/java` works as a CI gate on its own. For GitHub code scanning:
+
+```bash
+tql lint src/test/java --format sarif > target/tql.sarif
+```
+
+See [docs/ci-integration.md](docs/ci-integration.md) for the full GitHub Actions workflow.
+
+### Commands
+
+- `tql lint <paths...> [--config FILE] [--format console|json|sarif|md] [--classpath PATH] [--fail-on info|warn|error]`
+  Lints files and directories (recursively, for `.java` files). `--config` defaults to
+  `.tql.yaml` in the working directory when present. `--classpath` (entries separated like the
+  platform path separator) enables symbol resolution for the rules that use it.
+- `tql rules` lists every rule with its id, name, default severity and description.
+- `tql explain <RULE_ID>` prints a rule's description, default severity and a link to its docs
+  page.
+
+### Using the library directly
 
 ```java
 import io.github.byreshb.tql.engine.Linter;
@@ -73,18 +108,6 @@ public class LintTests {
     System.exit(result.hasFindingsAtOrAbove(Severity.ERROR) ? 1 : 0);
   }
 }
-```
-
-The console output groups findings by file, one line each with position, severity, rule id and
-message, followed by the offending line and a fix hint:
-
-```text
-src/test/java/com/acme/OrderServiceTest.java
-  27:5   ERROR  TQL001  assertEquals compares order with itself and cannot fail
-         | assertEquals(order, order);
-         fix: Assert against an expected value that is computed independently of the code under test
-
-1 finding in 12 files (1 error, 0 warnings, 0 info)
 ```
 
 ## Rules
@@ -111,15 +134,19 @@ Configuration (`.tql.yaml`, severity overrides, options, suppressions) is docume
 ## Reference
 
 - `Linter`: `withDefaults()`, or `new Linter(RuleRegistry, RuleConfig)`; `lintPaths(paths)`
-  walks directories for `.java` files, `lint(sources)` takes in-memory `SourceFile`s.
+  walks directories for `.java` files, `lint(sources)` takes in-memory `SourceFile`s. Pass a
+  (possibly empty) classpath as a third constructor argument, or use `withClasspath(...)`, to
+  enable symbol resolution.
 - `RuleConfig.builder()`: `disable(id)`, `severity(id, Severity)`, `option(id, key, value)`,
-  `exclude(glob)`.
+  `exclude(glob)`; `RuleConfigLoader.load(path)` builds one from a `.tql.yaml` file (see
+  [docs/configuration.md](docs/configuration.md)).
 - `RuleRegistry.discover()` finds every rule registered as a `ServiceLoader` service, so a rule
   in another jar is picked up by putting the jar on the classpath.
 - `LintResult`: `findings()` sorted by file and position, `problems()` for files that did not
   parse, `countByRule()`, `countBySeverity()`, `hasFindingsAtOrAbove(Severity)`.
-- `ConsoleReporter`: `forTerminal()` colours when standard output is a terminal and `NO_COLOR`
-  is unset; `new ConsoleReporter(false)` never colours.
+- Reporters: `ConsoleReporter` (`forTerminal()` colours when standard output is a terminal and
+  `NO_COLOR` is unset), `JsonReporter`, `SarifReporter(rules[, toolVersion])`,
+  `MarkdownReporter`; every reporter has a `render(LintResult)` returning a `String`.
 
 How the pieces fit together, and how to add a rule or a reporter, is in
 [docs/design.md](docs/design.md).
