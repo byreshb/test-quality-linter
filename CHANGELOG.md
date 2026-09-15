@@ -6,6 +6,8 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-09-15
+
 ### Added
 - `vscode-extension/`: the `tql-vscode` VS Code extension, structured as a language server
   (`vscode-languageserver`) so any LSP-capable editor can reuse it. Lints on open and on save for
@@ -70,5 +72,6 @@ All notable changes to this project are documented here. The format follows
 - Documentation: README, `docs/design.md`, `docs/configuration.md`, `docs/ci-integration.md`,
   `docs/releasing.md`, and a docs page per rule under `docs/rules`.
 
-[Unreleased]: https://github.com/byreshb/test-quality-linter/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/byreshb/test-quality-linter/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/byreshb/test-quality-linter/releases/tag/v1.1.0
 [1.0.0]: https://github.com/byreshb/test-quality-linter/releases/tag/v1.0.0

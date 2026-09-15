@@ -52,14 +52,14 @@ java -jar tql-cli/target/tql-cli-*.jar --help
 <dependency>
   <groupId>io.github.byreshb</groupId>
   <artifactId>tql-core</artifactId>
-  <version>1.0.0</version>
+  <version>1.1.0</version>
 </dependency>
 ```
 
 ## Quick start
 
 ```bash
-java -jar tql-cli-1.0.0.jar lint src/test/java
+java -jar tql-cli-1.1.0.jar lint src/test/java
 ```
 
 ```text
@@ -104,7 +104,7 @@ Binds `tql:lint` to the `verify` phase:
 <plugin>
   <groupId>io.github.byreshb</groupId>
   <artifactId>tql-maven-plugin</artifactId>
-  <version>1.0.0</version>
+  <version>1.1.0</version>
   <executions>
     <execution>
       <goals>

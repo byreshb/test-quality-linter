@@ -59,7 +59,7 @@ jobs:
 
       - name: Download tql
         run: |
-          version=1.0.0
+          version=1.1.0
           curl -fsSL -o tql.jar \
             "https://github.com/byreshb/test-quality-linter/releases/download/v${version}/tql-cli-${version}.jar"
 
